@@ -13,18 +13,18 @@ function GetFromAPI() {
             $PostsArray += [Post]::fromJSON($post)
         }
 
-        Write-Host "$($PostsArray.count) Posts Loaded from API"
+        Write-Host "`n`t$($PostsArray.count) Posts Loaded from API"
         $PostsArray | Out-GridView -Title "Posts from API" -Wait
 
         return $PostsArray
     } catch {
-        Write-Host "GET Error: $_"
+        Write-Host "`n`tGET Error: $_"
     }
 }
 
 function PostToAPI($Object) {
     if ($null -eq $Object) {
-        Write-Host "Nothing Loaded"
+        Write-Host "`n`tNothing Loaded"
         return $null
     }
 
@@ -33,7 +33,7 @@ function PostToAPI($Object) {
     $post = $Object | Out-GridView -Title "Select a Record to POST" -PassThru
 
     if ($null -eq $post) {
-        Write-Host "No Record Selected"
+        Write-Host "`n`tNo Record Selected"
         return $null
     }
 
@@ -44,22 +44,22 @@ function PostToAPI($Object) {
 
     try {
         $response = Invoke-RestMethod $url -Method Post -Headers $headers -Body $body
-        Write-Host "Record id: $($post.id) POSTed to API"
+        Write-Host "`n`tRecord id: $($post.id) POSTed to API"
         $response | Out-GridView -Title "Record POSTed" -Wait
     } catch {
-        Write-Host "POST Error: $_"
+        Write-Host "`n`tPOST Error: $_"
     }
     
 }
 
 function SaveToCSV($Object) {
     if ($null -eq $Object) {
-        Write-Host "Nothing Loaded"
+        Write-Host "`tNothing Loaded"
         return $null
     }
 
     do {
-        $filename = Read-Host "Filename"
+        $filename = Read-Host "`n`tFilename"
     } while ($null -eq $filename)
 
     if ($filename -notmatch ".csv$") {
@@ -68,16 +68,16 @@ function SaveToCSV($Object) {
 
     try {
         $Object | Export-CSV -Path $filename -NoTypeInformation
-        Write-Host "$filename saved"
+        Write-Host "`n`t$filename saved"
         Invoke-Item $filename
     } catch {
-        Write-Host "File Save Error: $_"
+        Write-Host "`n`tFile Save Error: $_"
     }
 }
 
 function LoadFromCSV() {
     do {
-        $filename = Read-Host "Filename"
+        $filename = Read-Host "`n`tFilename"
     } while ($null -eq $filename)
 
     if ($filename -notmatch ".csv$") {
@@ -93,10 +93,10 @@ function LoadFromCSV() {
             $posts += $post
         }
 
-        Write-Host "Loaded $filename"
+        Write-Host "`n`t$($posts.count) Posts Loaded from CSV file $filename"
         $posts | Out-GridView -Title "$($posts.count) Posts Loaded from CSV file" -Wait
     } catch {
-        Write-Host "File Load Error: $_"
+        Write-Host "`n`tFile Load Error: $_"
     }
 
     return $posts
@@ -104,14 +104,14 @@ function LoadFromCSV() {
 
 function showPosts($Posts) {
     if ($null -eq $Posts) {
-        Write-Host "Nothing Loaded"
+        Write-Host "`n`tNothing Loaded"
         return $null
     }
 
     $Posts | Out-GridView -Title "Posts" -Wait
 }
 
-function MainMenu($Message) {
+function MainMenu() {
     Clear-Host
     Write-Host "`n`t==={ Main Menu }==="
     Write-Host "`n`t1) Load Posts from API (GET)"
@@ -120,25 +120,23 @@ function MainMenu($Message) {
     Write-Host "`t4) Load Posts from CSV file"
     Write-Host "`t5) Display Posts"
     Write-Host "`n`tQ) Quit"
-    Write-Host "`n`n`tMake a selection:"
-    Write-Host "`n`n`t$Message"
     if ($null -eq $dataObject) {
         Write-Host "`n`tNo Posts Loaded"
     }
-    $Message = ""
+    # Write-Host "`n`n`tMake a selection:"
 
-    switch ($Host.UI.ReadLine()) {
+    switch (read-host "`n`n`tMake a selection") {
         1 { $dataObject = GetFromAPI }
         2 { PostToAPI($dataObject) }
         3 { SaveToCSV($dataObject) }
         4 { $dataObject = LoadFromCSV }
         5 { showPosts($dataObject) }
         "Q" { exit }
-        default { $Message = "Error: Invalid Choice" }
+        default { Write-Host "`tError: Invalid Choice" }
     }
-    Write-Host -NoNewLine 'Press any key to continue...';
+    Write-Host -NoNewLine "`n`tPress any key to continue...";
     $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
-    MainMenu($Message)
+    MainMenu
 }
 
 MainMenu
