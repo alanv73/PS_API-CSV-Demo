@@ -23,6 +23,8 @@ function GetFromAPI() {
 }
 
 function PostToAPI($Object) {
+    //TODO: handle multiple selections
+    
     if ($null -eq $Object) {
         Write-Host "`n`tNothing Loaded"
         return $null
