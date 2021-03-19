@@ -1,6 +1,24 @@
+using module .\Post.psm1
+
+$API_URL = "https://jsonplaceholder.typicode.com/posts"
+
 function GetFromAPI() {
-    Get-ChildItem | Out-GridView
-    return "data"
+    $url = $API_URL
+    $PostsArray = @()
+    
+    try {
+        $posts = Invoke-RestMethod $url -Method Get
+
+        foreach ($post in $posts) {
+            $PostsArray += [Post]::fromJSON($post)
+        }
+
+        $PostsArray | Out-GridView
+
+        return $PostsArray
+    } catch {
+        Write-Host "GET Error: $_"
+    }
 }
 
 function PostToAPI($Object) {
@@ -37,6 +55,8 @@ function MainMenu($Message) {
         "Q" { exit }
         default { $Message = "Error: Invalid Choice" }
     }
+    Write-Host -NoNewLine 'Press any key to continue...';
+    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
     MainMenu($Message)
 }
 
