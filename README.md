@@ -4,6 +4,8 @@ Post.psm1: data model
 
 get-post-demo.ps1: Powershell script
 
+API GET/POST methods use <a href="http://jsonplaceholder.typicode.com/">{JSON} Placeholder API</a>
+
 
 
         ==={ Main Menu }===
