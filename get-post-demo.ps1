@@ -53,43 +53,86 @@ function PostToAPI($Object) {
 }
 
 function SaveToCSV($Object) {
-    $filename = Read-Host "Filename"
-    $Object | Export-CSV -Path $filename -NoTypeInformation
-    Write-Host "$filename saved"
-    Invoke-Item $filename
+    if ($null -eq $Object) {
+        Write-Host "Nothing Loaded"
+        return $null
+    }
+
+    do {
+        $filename = Read-Host "Filename"
+    } while ($null -eq $filename)
+
+    if ($filename -notmatch ".csv$") {
+        $filename += ".csv"
+    }
+
+    try {
+        $Object | Export-CSV -Path $filename -NoTypeInformation
+        Write-Host "$filename saved"
+        Invoke-Item $filename
+    } catch {
+        Write-Host "File Save Error: $_"
+    }
 }
 
 function LoadFromCSV() {
-    $filename = Read-Host "Filename"
-    $data = Import-CSV -Path $filename
-    $posts = @()
+    do {
+        $filename = Read-Host "Filename"
+    } while ($null -eq $filename)
 
-    foreach ($datum in $data) {
-        $post = [Post]::fromJSON($datum)
-        $posts += $post
+    if ($filename -notmatch ".csv$") {
+        $filename += ".csv"
+    }
+    
+    try {
+        $data = Import-CSV -Path $filename
+        $posts = @()
+
+        foreach ($datum in $data) {
+            $post = [Post]::fromJSON($datum)
+            $posts += $post
+        }
+
+        Write-Host "Loaded $filename"
+        $posts | Out-GridView -Title "$($posts.count) Posts Loaded from CSV file" -Wait
+    } catch {
+        Write-Host "File Load Error: $_"
     }
 
-    Write-Host "Loaded $filename"
-    $posts | Out-GridView -Title "Posts Loaded from CSV file" -Wait
+    return $posts
+}
+
+function showPosts($Posts) {
+    if ($null -eq $Posts) {
+        Write-Host "Nothing Loaded"
+        return $null
+    }
+
+    $Posts | Out-GridView -Title "Posts" -Wait
 }
 
 function MainMenu($Message) {
     Clear-Host
-    Write-Host "==={ Main Menu }==="
-    Write-Host "`n1) GET Data from API"
-    Write-Host "2) POST Data to API"
-    Write-Host "3) Save Data to CSV"
-    Write-Host "4) Load Data from CSV"
-    Write-Host "Q) Quit"
-    Write-Host "`nMake a selection:"
-    Write-Host "`n$Message"
+    Write-Host "`n`t==={ Main Menu }==="
+    Write-Host "`n`t1) Load Posts from API (GET)"
+    Write-Host "`n`t2) Save a Post to API (POST)"
+    Write-Host "`n`t3) Save Posts to CSV file"
+    Write-Host "`n`t4) Load Posts from CSV file"
+    Write-Host "`n`t5) Display Posts"
+    Write-Host "`n`tQ) Quit"
+    Write-Host "`n`n`tMake a selection:"
+    Write-Host "`n`n`t$Message"
+    if ($null -eq $dataObject) {
+        Write-Host "`n`tNo Posts Loaded"
+    }
     $Message = ""
 
-    switch (Read-Host) {
+    switch ($Host.UI.ReadLine()) {
         1 { $dataObject = GetFromAPI }
-        2 { PostToAPI -Object $dataObject }
-        3 { SaveToCSV -Object $dataObject }
-        4 { LoadFromCSV }
+        2 { PostToAPI($dataObject) }
+        3 { SaveToCSV($dataObject) }
+        4 { $dataObject = LoadFromCSV }
+        5 { showPosts($dataObject) }
         "Q" { exit }
         default { $Message = "Error: Invalid Choice" }
     }
