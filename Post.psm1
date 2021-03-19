@@ -16,6 +16,19 @@ class Post {
         $this.userId = $userId
     }
 
+    [string]toJSONString() {
+        $output = @"
+{
+    `"id`": $($this.id),
+    `"title`": `"$($this.title)`",
+    `"body`": `"$($this.body -replace "`n", " ")`",
+    `"userId`": $($this.userId)
+}
+"@
+
+        return $output
+    }
+
     static [Post]fromJSON($JsonData) {
         return New-Object Post(
             $JsonData.id,
