@@ -54,7 +54,7 @@ function PostToAPI($Object) {
 
 function SaveToCSV($Object) {
     if ($null -eq $Object) {
-        Write-Host "`tNothing Loaded"
+        Write-Host "`n`tNothing Loaded"
         return $null
     }
 
