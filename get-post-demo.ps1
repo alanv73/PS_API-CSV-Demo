@@ -23,8 +23,6 @@ function GetFromAPI() {
 }
 
 function PostToAPI($Object) {
-    //TODO: handle multiple selections
-    
     if ($null -eq $Object) {
         Write-Host "`n`tNothing Loaded"
         return $null
@@ -32,11 +30,32 @@ function PostToAPI($Object) {
 
     $url = "$API_BASE_URL/posts"
 
-    $post = $Object | Out-GridView -Title "Select a Record to POST" -PassThru
+    do {
+        $post = $Object | Out-GridView -Title "Select a Record to POST" -PassThru
+        if ($null -eq $post) {
+            $response = [System.Windows.MessageBox]::Show(
+                'No record selected. Do you want to try again?', 
+                'Nothing Selected', 
+                'YesNo', 
+                'Exclamation'
+            )
+        } elseif ($post -is [Array]) {
+            $response = [System.Windows.MessageBox]::Show(
+                'Multiple records selected. Please try again.', 
+                'Multiple Selection', 
+                'OKCancel', 
+                'Exclamation'
+            )
+        }
+        switch ( $response) {
+            { ($_ -eq "OK") -or ($_ -eq "Yes") } { $post = $null } # OK or Yes
+            { ($_ -eq "Cancel") -or ($_ -eq "No") } { return $null } # Cancel or No
+        }
+    } while ($null -eq $post)
 
-    if ($null -eq $post) {
-        Write-Host "`n`tNo Record Selected"
-        return $null
+    if ($post -is [Array]) {
+        Write-Host "`n`tMultiple items selected, using first selected item only"
+        $post = $post[0]
     }
 
     $headers = New-Object System.Collections.Generic.Dictionary"[[String],[String]]"
