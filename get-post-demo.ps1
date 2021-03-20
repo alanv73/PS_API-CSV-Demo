@@ -4,14 +4,11 @@ $API_BASE_URL = "https://jsonplaceholder.typicode.com"
 
 function GetFromAPI() {
     $url = "$API_BASE_URL/posts"
-    $PostsArray = @()
     
     try {
         $posts = Invoke-RestMethod $url -Method Get
 
-        foreach ($post in $posts) {
-            $PostsArray += [Post]::fromJSON($post)
-        }
+        $PostsArray = $posts.ForEach( { [Post]::fromJSON($_) })
 
         Write-Host "`n`t$($PostsArray.count) Posts Loaded from API"
         $PostsArray | Out-GridView -Title "Posts from API" -Wait
@@ -108,12 +105,8 @@ function LoadFromCSV() {
     
     try {
         $data = Import-CSV -Path $filename
-        $posts = @()
 
-        foreach ($datum in $data) {
-            $post = [Post]::fromJSON($datum)
-            $posts += $post
-        }
+        $posts = $data.ForEach( { [Post]::fromJSON($_) })
 
         Write-Host "`n`t$($posts.count) Posts Loaded from CSV file $filename"
         $posts | Out-GridView -Title "$($posts.count) Posts Loaded from CSV file" -Wait
