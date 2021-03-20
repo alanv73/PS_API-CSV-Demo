@@ -32,24 +32,25 @@ function PostToAPI($Object) {
 
     do {
         $post = $Object | Out-GridView -Title "Select a Record to POST" -PassThru
+        $wshell = New-Object -ComObject Wscript.Shell
         if ($null -eq $post) {
-            $response = [System.Windows.MessageBox]::Show(
+            $response = $wshell.Popup(
                 'No record selected. Do you want to try again?', 
+                0,
                 'Nothing Selected', 
-                'YesNo', 
-                'Exclamation'
+                0x4
             )
         } elseif ($post -is [Array]) {
-            $response = [System.Windows.MessageBox]::Show(
+            $response = $wshell.Popup(
                 'Multiple records selected. Please try again.', 
+                0,
                 'Multiple Selection', 
-                'OKCancel', 
-                'Exclamation'
+                0x1
             )
         }
         switch ( $response) {
-            { ($_ -eq "OK") -or ($_ -eq "Yes") } { $post = $null } # OK or Yes
-            { ($_ -eq "Cancel") -or ($_ -eq "No") } { return $null } # Cancel or No
+            { ($_ -eq 1) -or ($_ -eq 6) } { $post = $null } # OK or Yes
+            { ($_ -eq 2) -or ($_ -eq 7) } { return $null } # Cancel or No
         }
     } while ($null -eq $post)
 
